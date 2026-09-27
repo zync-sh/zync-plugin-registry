@@ -6,7 +6,8 @@
       "repository": "zync-sh/zync-pm2-monitor",
       "version": "2.0.0",
       "channel": "stable",
-      "publisherVerified": true
+      "publisherVerified": true,
+      "thumbnailUrl": "https://raw.githubusercontent.com/zync-sh/zync-pm2-monitor/v2.0.0/src/icons/process-manager.svg"
     }
   ],
   "revocations": []

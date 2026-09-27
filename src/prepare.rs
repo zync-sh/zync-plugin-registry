@@ -36,6 +36,7 @@ struct Release {
     version: String,
     channel: String,
     publisher_verified: bool,
+    thumbnail_url: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -166,12 +167,17 @@ pub fn run(input_path: &Path, approvals_path: &Path, output: &Path) -> Result<()
         let destination = output.join(&relative);
         fs::create_dir_all(&destination)?;
         extract(&archive, &destination)?;
-        releases.push(json!({
+        let mut descriptor = json!({
             "packagePath": relative,
             "downloadUrl": url,
             "publisherVerified": release.publisher_verified,
             "channel": release.channel,
-        }));
+        });
+        if let Some(thumbnail) = &release.thumbnail_url {
+            registry::validate_url(thumbnail)?;
+            descriptor["thumbnailUrl"] = json!(thumbnail);
+        }
+        releases.push(descriptor);
     }
 
     let descriptor = output.join("registry-releases.json");

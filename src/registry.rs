@@ -35,6 +35,7 @@ pub struct ReleaseDescriptor {
     pub download_url: String,
     pub publisher_verified: bool,
     pub channel: String,
+    pub thumbnail_url: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -189,6 +190,10 @@ pub fn assemble(descriptor_path: &Path, approvals: &Approvals) -> Result<Value> 
                 );
                 plugin[target] = value.clone();
             }
+        }
+        if let Some(thumbnail) = &release.thumbnail_url {
+            validate_url(thumbnail)?;
+            plugin["thumbnailUrl"] = json!(thumbnail);
         }
         plugins.push(plugin);
     }
@@ -489,6 +494,7 @@ mod tests {
             "releases": [{
                 "packagePath": directory.path(),
                 "downloadUrl": "https://github.com/example/plugin/releases/download/v1.0.0/plugin.zip",
+                "thumbnailUrl": "https://example.com/icon.svg",
                 "channel": "stable",
                 "publisherVerified": true,
             }],
@@ -504,6 +510,10 @@ mod tests {
         };
         let payload = assemble(&descriptor, &approvals).unwrap();
         assert_eq!(payload["plugins"][0]["name"], "Test plugin");
+        assert_eq!(
+            payload["plugins"][0]["thumbnailUrl"],
+            "https://example.com/icon.svg"
+        );
         assert!(assemble(&descriptor, &Approvals { publishers: vec![] }).is_err());
 
         let keys = tempfile::tempdir().unwrap();
