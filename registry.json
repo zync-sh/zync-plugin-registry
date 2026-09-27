@@ -2,14 +2,29 @@
   "signatures": [
     {
       "keyId": "sha256:53402fb200b7a4b29349ec1c2381c56d6c0146f93958b916a4db3f25c42bee06",
-      "signature": "L6lJaTz0R73pOgdpR3FIwBPKuipbD0dX71efn/o3hY7NBs+W1/TqXv4TRNx86F6SO36UXIqdZocIX/6MuLAkDw=="
+      "signature": "7s52RIWhCo2yD+rhKaUHe2Oth0ZWY1X3svmVC9WBcFWRew8Md0WmGXdnKi9whfWl3AuXTJ5N1xu+nxztEYf1BQ=="
     }
   ],
   "signed": {
     "_type": "zync.plugin-registry",
-    "expiresAtMs": 1791101165437,
-    "issuedAtMs": 1790496365437,
+    "expiresAtMs": 1791145956746,
+    "issuedAtMs": 1790541156746,
     "plugins": [
+      {
+        "channel": "stable",
+        "description": "Manage containers, inspect Docker resources, and view metrics and logs on this pane's server.",
+        "downloadUrl": "https://github.com/zync-sh/zync-docker-manager/releases/download/v0.2.0/docker-manager-0.2.0-signed.zip",
+        "icon": "icons/docker-manager.svg",
+        "id": "com.zync.plugin.docker-manager",
+        "name": "Docker Manager",
+        "packageDigest": "sha256:28e2d34bcdb42cddfb73bbfe143f19a477ac9c0049acb199a5ff8e4dd290075b",
+        "publisher": "com.zync",
+        "publisherKeyId": "sha256:eeccbf7e9cb69165aa2fce6df48a1128032930081f4c89d44a8b35155efdb125",
+        "publisherPublicKey": "MHj7SMWjdmaBzZyURDc9EBlss2k65RlwoC8/jwKEt5U=",
+        "publisherVerified": true,
+        "thumbnailUrl": "https://raw.githubusercontent.com/zync-sh/zync-docker-manager/v0.2.0/src/icons/docker-manager.svg",
+        "version": "0.2.0"
+      },
       {
         "channel": "stable",
         "description": "Monitor PM2 processes, inspect recent logs, and manage selected processes on the server connected to this pane.",
@@ -22,10 +37,11 @@
         "publisherKeyId": "sha256:eeccbf7e9cb69165aa2fce6df48a1128032930081f4c89d44a8b35155efdb125",
         "publisherPublicKey": "MHj7SMWjdmaBzZyURDc9EBlss2k65RlwoC8/jwKEt5U=",
         "publisherVerified": true,
+        "thumbnailUrl": "https://raw.githubusercontent.com/zync-sh/zync-pm2-monitor/v2.0.0/src/icons/process-manager.svg",
         "version": "2.0.0"
       }
     ],
     "revocations": [],
-    "version": 3
+    "version": 4
   }
 }
