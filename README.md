@@ -33,6 +33,9 @@ cargo test --locked
 Edit `registry-input.json` to add a release. Preserve earlier entries and cumulative
 revocations. Publisher identity, repository, and key approvals are maintained
 separately in `approved-publishers.json`; changes require operator review.
+Existing releases remain immutable except for `thumbnailUrl` presentation updates.
+Package identity, hashes, signing keys and trust fields cannot be changed, and
+previous revocations must be retained.
 
 ```powershell
 cargo run --locked -- prepare --input registry-input.json --approvals approved-publishers.json --output prepared-registry

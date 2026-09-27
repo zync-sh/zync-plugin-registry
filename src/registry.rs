@@ -284,11 +284,29 @@ pub fn preserve_history(previous: &Value, current: &Value) -> Result<()> {
             .as_array()
             .context("Invalid prepared registry list")?;
         ensure!(
-            old_entries.iter().all(|old| new_entries.contains(old)),
+            old_entries.iter().all(|old| {
+                new_entries.iter().any(|new| {
+                    if field == "plugins" {
+                        immutable_release(old) == immutable_release(new)
+                    } else {
+                        old == new
+                    }
+                })
+            }),
             "Registry update removes or changes existing {field}"
         );
     }
     Ok(())
+}
+
+fn immutable_release(release: &Value) -> Value {
+    let mut identity = release.clone();
+    if let Some(fields) = identity.as_object_mut() {
+        // Thumbnails are presentation metadata, not package identity or trust.
+        // Every other field, including unknown future fields, remains immutable.
+        fields.remove("thumbnailUrl");
+    }
+    identity
 }
 
 pub fn verify_envelope(
@@ -596,5 +614,59 @@ mod tests {
             json!({"plugins": [{"id": "example"}], "revocations": [{"reason": "compromised"}]});
         assert!(preserve_history(&previous, &previous).is_ok());
         assert!(preserve_history(&previous, &json!({"plugins": [], "revocations": []})).is_err());
+    }
+
+    #[test]
+    fn history_allows_thumbnail_updates_and_new_plugins_only() {
+        let previous =
+            json!({"plugins": [{"id": "example", "version": "1.0.0"}], "revocations": []});
+        let mut current = previous.clone();
+        current["plugins"][0]["thumbnailUrl"] = json!("https://example.com/icon.svg");
+        current["plugins"]
+            .as_array_mut()
+            .unwrap()
+            .push(json!({"id": "another", "version": "1.0.0"}));
+        assert!(preserve_history(&previous, &current).is_ok());
+        let mut updated = current.clone();
+        updated["plugins"][0]["thumbnailUrl"] = json!("https://example.com/new-icon.svg");
+        assert!(preserve_history(&current, &updated).is_ok());
+    }
+
+    #[test]
+    fn thumbnail_updates_cannot_mask_trust_changes_or_removed_history() {
+        let previous = json!({"plugins": [{
+            "id": "example", "version": "1.0.0", "publisher": "example",
+            "packageDigest": "original", "publisherKeyId": "original",
+            "publisherPublicKey": "original", "publisherVerified": true,
+            "downloadUrl": "https://example.com/package.zip", "channel": "stable",
+            "name": "Example", "futureTrustField": "original"
+        }], "revocations": [{"reason": "compromised"}]});
+        for field in [
+            "id",
+            "version",
+            "publisher",
+            "packageDigest",
+            "publisherKeyId",
+            "publisherPublicKey",
+            "publisherVerified",
+            "downloadUrl",
+            "channel",
+            "name",
+            "futureTrustField",
+        ] {
+            let mut current = previous.clone();
+            current["plugins"][0]["thumbnailUrl"] = json!("https://example.com/icon.svg");
+            current["plugins"][0][field] = json!("changed");
+            assert!(
+                preserve_history(&previous, &current).is_err(),
+                "accepted change to {field}"
+            );
+        }
+        let mut current = previous.clone();
+        current["revocations"] = json!([]);
+        assert!(preserve_history(&previous, &current).is_err());
+        current = previous.clone();
+        current["plugins"] = json!([]);
+        assert!(preserve_history(&previous, &current).is_err());
     }
 }

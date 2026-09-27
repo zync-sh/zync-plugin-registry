@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixed
+
+- Allow thumbnail-only updates to existing registry releases without weakening immutable package identity, trust metadata, or cumulative revocation preservation.
+
 ### Added
 
 - Input-driven signed ZIP asset names and generic archive verification, removing PM2-specific release preparation rules.
