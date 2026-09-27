@@ -1,0 +1,25 @@
+name: Rust checks
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    name: Format, lint, and test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Install Rust
+        run: rustup toolchain install stable --profile minimal --component rustfmt --component clippy
+      - name: Check formatting
+        run: cargo +stable fmt --all --check
+      - name: Check lint
+        run: cargo +stable clippy --locked --all-targets -- -D warnings
+      - name: Run tests
+        run: cargo +stable test --locked

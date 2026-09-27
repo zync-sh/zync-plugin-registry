@@ -1,0 +1,16 @@
+{
+  "signed": {
+    "_type": "zync.plugin-registry",
+    "version": 2,
+    "issuedAtMs": 1000,
+    "expiresAtMs": 10000,
+    "plugins": [],
+    "revocations": []
+  },
+  "signatures": [
+    {
+      "keyId": "sha256:dbc298251c51321b7266e78d1c151c2b62aff8cb95b293096d3463018544face",
+      "signature": "LHSmYX5KPt8zYObbKsp3VQ+6BDNNKRujTd5JiCPC75OxhSf+GleE4NMy/4jq4ArKMYKbBxfTG3VxpUB4nbaRAw=="
+    }
+  ]
+}

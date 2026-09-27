@@ -1,0 +1,132 @@
+name: Publish signed registry
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - registry-input.json
+      - approved-publishers.json
+      - Cargo.toml
+      - Cargo.lock
+      - src/**
+      - tests/**
+      - .github/workflows/publish.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: registry-publication
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Install Rust
+        run: rustup toolchain install stable --profile minimal --component rustfmt --component clippy
+      - name: Check source
+        run: |
+          cargo +stable fmt --all --check
+          cargo +stable clippy --locked --all-targets -- -D warnings
+          cargo +stable test --locked
+      - name: Build and prepare without signing secrets
+        run: |
+          cargo +stable build --locked --release
+          target/release/zync-registry prepare --input registry-input.json --approvals approved-publishers.json --output prepared-registry
+          mkdir publication-input
+          cp target/release/zync-registry publication-input/
+          cp approved-publishers.json publication-input/
+          cp -R prepared-registry publication-input/
+          if test -f registry.json; then cp registry.json publication-input/baseline.json; fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: registry-publication-input
+          path: publication-input/
+          retention-days: 3
+          if-no-files-found: error
+
+  sign:
+    needs: prepare
+    environment: registry-release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: registry-publication-input
+          path: publication-input
+      - name: Sign and independently verify registry
+        env:
+          ROOT_PRIVATE_PEM: ${{ secrets.REGISTRY_ROOT_PRIVATE_KEY }}
+          ROOT_PUBLIC_KEYS: ${{ vars.ZYNC_PLUGIN_REGISTRY_ROOT_KEYS }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$ROOT_PRIVATE_PEM" || { echo "Missing REGISTRY_ROOT_PRIVATE_KEY"; exit 1; }
+          test -n "$ROOT_PUBLIC_KEYS" || { echo "Missing ZYNC_PLUGIN_REGISTRY_ROOT_KEYS"; exit 1; }
+          umask 077
+          key_file=$(mktemp "$RUNNER_TEMP/registry-root.XXXXXX.pem")
+          trap 'rm -f -- "$key_file"' EXIT
+          printf '%s\n' "$ROOT_PRIVATE_PEM" > "$key_file"
+          unset ROOT_PRIVATE_PEM
+          chmod +x publication-input/zync-registry
+          issued=$(date +%s%3N)
+          baseline_args=()
+          if test -f publication-input/baseline.json; then
+            previous=$(jq -er '.signed.version | select(type == "number" and . > 0 and floor == .)' publication-input/baseline.json)
+            version=$((previous + 1))
+            baseline_args=(--baseline publication-input/baseline.json --root-keys "$ROOT_PUBLIC_KEYS")
+          else
+            version=1
+          fi
+          mkdir signed-output
+          publication-input/zync-registry sign \
+            --descriptor publication-input/prepared-registry/registry-releases.json \
+            --approvals publication-input/approved-publishers.json \
+            --key "$key_file" --output signed-output/registry.json \
+            --version "$version" --minimum-version "$version" \
+            --issued-at-ms "$issued" --expires-at-ms 0 "${baseline_args[@]}"
+          publication-input/zync-registry verify-registry signed-output/registry.json \
+            --root-keys "$ROOT_PUBLIC_KEYS" --now-ms "$issued" --minimum-version "$version"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: signed-registry
+          path: signed-output/registry.json
+          retention-days: 30
+          if-no-files-found: error
+
+  publish:
+    needs: sign
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/download-artifact@v4
+        with:
+          name: signed-registry
+          path: signed-output
+      - name: Publish without access to signing secrets
+        env:
+          EXPECTED_SHA: ${{ github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin main
+          test "$(git rev-parse origin/main)" = "$EXPECTED_SHA" || {
+            echo "main changed during preparation; rerun on the latest commit."
+            exit 1
+          }
+          cp signed-output/registry.json registry.json
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- registry.json
+          git commit -m "chore(registry): publish signed metadata"
+          git push origin HEAD:main

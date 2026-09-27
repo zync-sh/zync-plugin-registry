@@ -1,0 +1,13 @@
+{
+  "releases": [
+    {
+      "pluginId": "com.zync.plugin.pm2-monitor",
+      "publisher": "com.zync",
+      "repository": "zync-sh/zync-pm2-monitor",
+      "version": "2.0.0",
+      "channel": "stable",
+      "publisherVerified": true
+    }
+  ],
+  "revocations": []
+}

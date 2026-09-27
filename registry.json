@@ -1,0 +1,31 @@
+{
+  "signatures": [
+    {
+      "keyId": "sha256:53402fb200b7a4b29349ec1c2381c56d6c0146f93958b916a4db3f25c42bee06",
+      "signature": "ANzm/mX/xwrWtd3pBr+3d5hoozpkybOyQ5W7T0PvpxgXH9nkBTJUztP0rwgjIjMBMQZ/Mxg7DTjmLsXEhm6HDw=="
+    }
+  ],
+  "signed": {
+    "_type": "zync.plugin-registry",
+    "expiresAtMs": 1791066941116,
+    "issuedAtMs": 1790462141116,
+    "plugins": [
+      {
+        "channel": "stable",
+        "description": "Monitor PM2 processes, inspect recent logs, and manage selected processes on the server connected to this pane.",
+        "downloadUrl": "https://github.com/zync-sh/zync-pm2-monitor/releases/download/v2.0.0/pm2-monitor-2.0.0-signed.zip",
+        "icon": "icons/process-manager.svg",
+        "id": "com.zync.plugin.pm2-monitor",
+        "name": "PM2 Monitor",
+        "packageDigest": "sha256:47cd5de4982a15d0b355631c2d1b63b2f3fe421a748556dddfa5c094a7f68b96",
+        "publisher": "com.zync",
+        "publisherKeyId": "sha256:eeccbf7e9cb69165aa2fce6df48a1128032930081f4c89d44a8b35155efdb125",
+        "publisherPublicKey": "MHj7SMWjdmaBzZyURDc9EBlss2k65RlwoC8/jwKEt5U=",
+        "publisherVerified": true,
+        "version": "2.0.0"
+      }
+    ],
+    "revocations": [],
+    "version": 1
+  }
+}
