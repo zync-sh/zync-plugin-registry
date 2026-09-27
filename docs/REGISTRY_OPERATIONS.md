@@ -3,7 +3,7 @@
 ## Automated publication
 
 The publication workflow runs on approved input/source changes pushed to `main`,
-or manually from `main`. Pull requests run checks only; they never receive keys.
+daily on a schedule, or manually from `main`. Pull requests run checks only; they never receive keys.
 
 1. Preparation formats, lints, tests, builds, and verifies release packages.
 2. Signing uses the separate `registry-release` environment. It receives the
@@ -21,6 +21,18 @@ Create an environment named `registry-release` in `zync-sh/zync-plugin-registry`
 Restrict deployment to `main`. For unattended operation, do not require a manual
 reviewer for every run; instead protect/review changes to source, workflows,
 publisher approvals, and registry input before they reach main.
+
+Use branch rulesets/protection requiring Rust checks and reviewed changes, with
+narrowly scoped publication access for generated metadata. A main-only signing
+environment does not prevent a main-branch workflow change from abusing secrets.
+Verify these GitHub settings before production publication. Solo maintainers
+should record self-review and restrict bypass/admin access, not claim independent review.
+
+Use branch rulesets/protection requiring Rust checks and reviewed changes, with
+narrowly scoped publication access for generated metadata. A main-only signing
+environment does not prevent a main-branch workflow change from abusing secrets.
+Verify these GitHub settings before production publication. Solo maintainers
+should record self-review and restrict bypass/admin access, not claim independent review.
 
 Set:
 
@@ -40,28 +52,36 @@ forgery. Restrict administrator access, retain encrypted recovery backups, and
 use a separate root from every publisher. Independent review is recommended;
 a solo maintainer may use documented self-review.
 
-## Non-expiring metadata
+## Expiry and automatic refresh
 
-Publication signs `expiresAtMs: 0`, explicitly meaning no expiry. No weekly refresh
-or scheduled signing is needed. Positive timestamps still enforce expiry.
+Publication signs metadata valid for seven days and refreshes it daily. Monitor
+failed or disabled scheduled runs; if refresh stops, marketplace metadata expires
+and new marketplace operations fail closed until publication is restored.
+Monitor Actions failures and scheduled-run status. GitHub can disable schedules
+in inactive public repositories; re-enable or dispatch before expiry and
+investigate publication failures.
+Monitor Actions failures and scheduled-run status. GitHub can disable schedules
+in inactive public repositories; re-enable or dispatch before expiry and
+investigate publication failures.
 Installed plugins are unaffected by registry expiry policy.
 
-This removes freeze protection for fresh installations or cleared trust state:
-an older correctly signed registry may omit newer revocations. Retained version
-floors and cumulative revocations protect clients only after they observe newer
-metadata. A non-expiring signature is not proof of freshness.
+Expiry bounds replay but does not guarantee immediate delivery of revocations.
+Retained version floors and cumulative revocations additionally protect clients
+after they observe newer metadata. The verifier accepts historical zero-expiry
+metadata for migration; the publication CLI refuses to produce it.
 
-Previously released Zync builds reject zero-expiry metadata. Deploy a compatible
-build before switching production. Keep legacy catalog URLs available.
+After the first expiring publication, raise Zync's release minimum registry
+version to that version before rebuilding. Otherwise fresh clients can still
+accept previously published non-expiring indexes. Keep legacy catalog URLs available.
 
 ## Local signing fallback
 
 ```powershell
-zync-registry sign --descriptor prepared-registry/registry-releases.json --approvals approved-publishers.json --key PATH_TO_ROOT_PRIVATE_PEM --output registry.json --version 1 --minimum-version 1 --issued-at-ms ISSUE_TIME_MS
+zync-registry sign --descriptor prepared-registry/registry-releases.json --approvals approved-publishers.json --key PATH_TO_ROOT_PRIVATE_PEM --output registry.json --version 1 --minimum-version 1 --issued-at-ms ISSUE_TIME_MS --expires-at-ms EXPIRY_TIME_MS
 zync-registry verify-registry registry.json --root-keys RAW_PUBLIC_KEY_BASE64 --now-ms CURRENT_TIME_MS --minimum-version 1
 ```
 
-Default expiry is zero. Explicit positive `--expires-at-ms` enables expiry.
+`--expires-at-ms` is required, later than issuance, and no more than seven days away.
 Output must not exist; keys must stay outside the repository/bundle. Encrypted
 PEM support has not been ported to Rust.
 

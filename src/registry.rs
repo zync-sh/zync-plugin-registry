@@ -421,6 +421,14 @@ fn validate_payload(payload: &Value, now: u64, minimum_version: u64) -> Result<(
     Ok(())
 }
 
+fn validate_publication_expiry(issued: u64, expires: u64) -> Result<()> {
+    ensure!(
+        expires > issued && expires - issued <= 7 * 24 * 60 * 60 * 1000,
+        "Publication expiry must be later than issuance and no more than seven days away"
+    );
+    Ok(())
+}
+
 pub fn sign(
     payload: Value,
     key_path: &Path,
@@ -428,6 +436,7 @@ pub fn sign(
     issued: u64,
     expires: u64,
 ) -> Result<Value> {
+    validate_publication_expiry(issued, expires)?;
     let pem = Zeroizing::new(String::from_utf8(files::read_bounded(
         key_path,
         16 * 1024,
@@ -459,6 +468,17 @@ fn sign_with_key(
 mod tests {
     use super::*;
     use ed25519_dalek::pkcs8::EncodePrivateKey;
+
+    #[test]
+    fn publication_requires_bounded_expiry() {
+        let issued = 1_000;
+        let week = 7 * 24 * 60 * 60 * 1000;
+        assert!(validate_publication_expiry(issued, 0).is_err());
+        assert!(validate_publication_expiry(issued, issued).is_err());
+        assert!(validate_publication_expiry(issued, issued - 1).is_err());
+        assert!(validate_publication_expiry(issued, issued + week).is_ok());
+        assert!(validate_publication_expiry(issued, issued + week + 1).is_err());
+    }
 
     #[test]
     fn prepares_signed_packages_and_signs_with_a_test_pem() {

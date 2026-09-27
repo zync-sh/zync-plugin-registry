@@ -1,6 +1,8 @@
 name: Publish signed registry
 
 on:
+  schedule:
+    - cron: '17 3 * * *'
   workflow_dispatch:
   push:
     branches: [main]
@@ -76,6 +78,7 @@ jobs:
           unset ROOT_PRIVATE_PEM
           chmod +x publication-input/zync-registry
           issued=$(date +%s%3N)
+          expires=$((issued + 7 * 24 * 60 * 60 * 1000))
           baseline_args=()
           if test -f publication-input/baseline.json; then
             previous=$(jq -er '.signed.version | select(type == "number" and . > 0 and floor == .)' publication-input/baseline.json)
@@ -90,7 +93,7 @@ jobs:
             --approvals publication-input/approved-publishers.json \
             --key "$key_file" --output signed-output/registry.json \
             --version "$version" --minimum-version "$version" \
-            --issued-at-ms "$issued" --expires-at-ms 0 "${baseline_args[@]}"
+            --issued-at-ms "$issued" --expires-at-ms "$expires" "${baseline_args[@]}"
           publication-input/zync-registry verify-registry signed-output/registry.json \
             --root-keys "$ROOT_PUBLIC_KEYS" --now-ms "$issued" --minimum-version "$version"
       - uses: actions/upload-artifact@v4

@@ -71,6 +71,6 @@ and history-preservation checks are implemented. Before production migration:
 5. Retain `zync-extensions` for older clients until a separate retirement decision.
 
 Do not substitute a test fixture root or unsigned JSON for production metadata.
-The workflow signs non-expiring metadata (`expiresAtMs: 0`) with the approved root;
-this requires a compatible Zync build. Private keys belong only in protected
+The workflow refreshes metadata daily with a seven-day expiry and an increasing
+registry version. Private keys belong only in protected
 signing custody, never repository files or artifacts.

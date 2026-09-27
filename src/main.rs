@@ -43,8 +43,8 @@ enum Command {
         version: u64,
         #[arg(long)]
         issued_at_ms: u64,
-        /// Zero means no automatic expiry; requires a compatible Zync build.
-        #[arg(long, default_value_t = 0)]
+        /// Required expiry timestamp, strictly later than issuance.
+        #[arg(long)]
         expires_at_ms: u64,
         #[arg(long)]
         baseline: Option<PathBuf>,
