@@ -44,10 +44,16 @@ descriptor, prepared metadata, and a verification report. None of these files is
 a signed registry. Failed runs may leave partial output; use a new output directory
 when retrying. Packages are never executed.
 
-The initial archive profile supports stable PM2 releases only. It enforces seven
-expected files, HTTPS-only redirects, checksums, download limits, signatures, and
-approved publisher/repository bindings. Other plugin layouts and beta preparation
-require additional reviewed profiles, not relaxed archive checks.
+Each release must provide `assetName`, the exact signed ZIP filename attached to
+its GitHub version tag, such as `docker-manager-0.2.0-signed.zip`. The checksum
+asset must use the same filename with `.sha256` appended. No plugin-specific
+Rust changes are needed to add another stable release.
+
+Preparation accepts bounded regular-file archives with safe, unique paths.
+The signed integrity metadata defines the complete payload; missing, modified,
+or additional unsigned files fail verification. HTTPS-only redirects, checksums,
+download limits, package identity and approved publisher/repository/key bindings
+remain mandatory. Beta preparation is not currently supported.
 
 ## Sign, verify, and publish
 

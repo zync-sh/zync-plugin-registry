@@ -5,9 +5,20 @@
       "publisher": "com.zync",
       "repository": "zync-sh/zync-pm2-monitor",
       "version": "2.0.0",
+      "assetName": "pm2-monitor-2.0.0-signed.zip",
       "channel": "stable",
       "publisherVerified": true,
       "thumbnailUrl": "https://raw.githubusercontent.com/zync-sh/zync-pm2-monitor/v2.0.0/src/icons/process-manager.svg"
+    },
+    {
+      "pluginId": "com.zync.plugin.docker-manager",
+      "publisher": "com.zync",
+      "repository": "zync-sh/zync-docker-manager",
+      "version": "0.2.0",
+      "assetName": "docker-manager-0.2.0-signed.zip",
+      "channel": "stable",
+      "publisherVerified": true,
+      "thumbnailUrl": "https://raw.githubusercontent.com/zync-sh/zync-docker-manager/v0.2.0/src/icons/docker-manager.svg"
     }
   ],
   "revocations": []

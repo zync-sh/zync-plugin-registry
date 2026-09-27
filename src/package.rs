@@ -54,7 +54,7 @@ fn sha256(bytes: &[u8]) -> String {
     format!("sha256:{:x}", Sha256::digest(bytes))
 }
 
-fn validate_path(path: &str) -> Result<()> {
+pub(crate) fn validate_path(path: &str) -> Result<()> {
     ensure!(
         !path.is_empty() && path.len() <= 512,
         "Invalid package path length"

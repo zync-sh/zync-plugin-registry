@@ -7,6 +7,14 @@
       "keyIds": [
         "sha256:eeccbf7e9cb69165aa2fce6df48a1128032930081f4c89d44a8b35155efdb125"
       ]
+    },
+    {
+      "publisher": "com.zync",
+      "pluginId": "com.zync.plugin.docker-manager",
+      "repository": "zync-sh/zync-docker-manager",
+      "keyIds": [
+        "sha256:eeccbf7e9cb69165aa2fce6df48a1128032930081f4c89d44a8b35155efdb125"
+      ]
     }
   ]
 }
