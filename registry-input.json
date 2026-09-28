@@ -19,6 +19,16 @@
       "channel": "stable",
       "publisherVerified": true,
       "thumbnailUrl": "https://raw.githubusercontent.com/zync-sh/zync-docker-manager/v0.2.0/src/icons/docker-manager.svg"
+    },
+    {
+      "pluginId": "com.zync.editor.zedit",
+      "publisher": "com.zync",
+      "repository": "zync-sh/zync-editor-monaco-plugin",
+      "version": "0.1.0",
+      "assetName": "zedit-0.1.0-signed.zip",
+      "channel": "stable",
+      "publisherVerified": true,
+      "thumbnailUrl": "https://raw.githubusercontent.com/zync-sh/zync-editor-monaco-plugin/main/src/icons/zedit.svg"
     }
   ],
   "revocations": []
