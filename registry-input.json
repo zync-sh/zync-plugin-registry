@@ -25,6 +25,7 @@
       "publisher": "com.zync",
       "repository": "zync-sh/zync-editor-monaco-plugin",
       "version": "0.1.0",
+      "releaseTag": "zedit-v0.1.0",
       "assetName": "zedit-0.1.0-signed.zip",
       "channel": "stable",
       "publisherVerified": true,

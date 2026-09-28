@@ -104,6 +104,21 @@ pub fn validate_url(value: &str) -> Result<url::Url> {
     Ok(url)
 }
 
+pub(crate) fn validate_release_tag(tag: &str) -> Result<()> {
+    ensure!(
+        tag.len() <= 128
+            && tag
+                .as_bytes()
+                .first()
+                .is_some_and(u8::is_ascii_alphanumeric)
+            && tag
+                .bytes()
+                .all(|byte| byte.is_ascii_alphanumeric() || b".-_".contains(&byte)),
+        "Expected a release tag without path or URL components"
+    );
+    Ok(())
+}
+
 pub fn assemble(descriptor_path: &Path, approvals: &Approvals) -> Result<Value> {
     let descriptor: Descriptor = files::read_json(descriptor_path)?;
     ensure!(
@@ -150,15 +165,22 @@ pub fn assemble(descriptor_path: &Path, approvals: &Approvals) -> Result<Value> 
             "Only beta prereleases are supported"
         );
         let url = validate_url(&release.download_url)?;
-        let prefix = format!(
-            "/{}/releases/download/v{}/",
-            approval.repository, report.version
-        );
+        let prefix = format!("/{}/releases/download/", approval.repository);
+        let release_path = url.path().strip_prefix(&prefix);
+        let segments = release_path.and_then(|path| path.split_once('/'));
         ensure!(
-            url.host_str() == Some("github.com")
-                && url.path().starts_with(&prefix)
-                && url.query().is_none(),
-            "Release URL does not match approved repository and version"
+            url.host_str() == Some("github.com") && segments.is_some() && url.query().is_none(),
+            "Release URL does not match approved repository"
+        );
+        let (tag, asset_name) = segments.context("Invalid release URL path")?;
+        validate_release_tag(tag)?;
+        ensure!(
+            asset_name.ends_with(".zip")
+                && asset_name.len() <= 255
+                && asset_name
+                    .bytes()
+                    .all(|byte| byte.is_ascii_alphanumeric() || b".-_".contains(&byte)),
+            "Invalid release ZIP asset name"
         );
         ensure!(
             identities.insert((report.plugin_id.clone(), report.version.clone())),
@@ -532,6 +554,17 @@ mod tests {
             payload["plugins"][0]["thumbnailUrl"],
             "https://example.com/icon.svg"
         );
+        let custom_tag_descriptor = bundle.path().join("custom-tag-releases.json");
+        files::write_new_json(&custom_tag_descriptor, &json!({
+            "releases": [{
+                "packagePath": directory.path(),
+                "downloadUrl": "https://github.com/example/plugin/releases/download/zedit-v1.0.0/plugin.zip",
+                "channel": "stable",
+                "publisherVerified": true,
+            }],
+            "revocations": [],
+        })).unwrap();
+        assert!(assemble(&custom_tag_descriptor, &approvals).is_ok());
         assert!(assemble(&descriptor, &Approvals { publishers: vec![] }).is_err());
 
         let keys = tempfile::tempdir().unwrap();

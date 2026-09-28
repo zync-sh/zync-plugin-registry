@@ -15,8 +15,9 @@ use crate::{
     registry::{self, Approvals},
 };
 
-const MAX_ARCHIVE_BYTES: u64 = 2 * 1024 * 1024;
-const MAX_EXTRACTED_BYTES: u64 = 4 * 1024 * 1024;
+const MAX_ARCHIVE_BYTES: u64 = 4 * 1024 * 1024;
+const MAX_ENTRY_BYTES: u64 = 8 * 1024 * 1024;
+const MAX_EXTRACTED_BYTES: u64 = 16 * 1024 * 1024;
 const MAX_ARCHIVE_FILES: usize = 2_048;
 
 #[derive(Deserialize)]
@@ -26,6 +27,7 @@ struct Release {
     publisher: String,
     repository: String,
     version: String,
+    release_tag: Option<String>,
     asset_name: String,
     channel: String,
     publisher_verified: bool,
@@ -61,19 +63,27 @@ fn extract(bytes: &[u8], destination: &Path) -> Result<()> {
     for index in 0..archive.len() {
         let mut entry = archive.by_index(index)?;
         let name = entry.name().to_owned();
-        package::validate_path(&name)?;
+        let path_name = if entry.is_dir() {
+            name.strip_suffix('/')
+                .context("Invalid archive directory")?
+        } else {
+            name.as_str()
+        };
+        package::validate_path(path_name)?;
         ensure!(seen.insert(name.clone()), "Duplicate archive entry");
+        ensure!(!entry.is_symlink(), "Archive links are not allowed");
+        if entry.is_dir() {
+            ensure!(entry.size() == 0, "Archive directory contains data");
+            fs::create_dir_all(destination.join(path_name))?;
+            continue;
+        }
         ensure!(
-            !entry.is_dir() && !entry.is_symlink(),
-            "Archive links and directories are not allowed"
-        );
-        ensure!(
-            entry.size() <= MAX_ARCHIVE_BYTES,
+            entry.size() <= MAX_ENTRY_BYTES,
             "Archive entry is too large"
         );
         let mut payload = Vec::new();
         (&mut entry)
-            .take(MAX_ARCHIVE_BYTES + 1)
+            .take(MAX_ENTRY_BYTES + 1)
             .read_to_end(&mut payload)?;
         ensure!(
             payload.len() as u64 == entry.size(),
@@ -84,7 +94,7 @@ fn extract(bytes: &[u8], destination: &Path) -> Result<()> {
             total <= MAX_EXTRACTED_BYTES,
             "Extracted archive exceeds limit"
         );
-        let path = destination.join(name);
+        let path = destination.join(path_name);
         fs::create_dir_all(path.parent().context("Missing package directory")?)?;
         let mut file = fs::OpenOptions::new()
             .write(true)
@@ -126,9 +136,14 @@ fn release_url(release: &Release) -> Result<String> {
                 .all(|byte| byte.is_ascii_alphanumeric() || b".-_".contains(&byte)),
         "Expected a ZIP asset filename without path or URL components"
     );
+    let tag = release
+        .release_tag
+        .clone()
+        .unwrap_or_else(|| format!("v{}", release.version));
+    registry::validate_release_tag(&tag)?;
     Ok(format!(
-        "https://github.com/{}/releases/download/v{}/{}",
-        release.repository, release.version, release.asset_name
+        "https://github.com/{}/releases/download/{}/{}",
+        release.repository, tag, release.asset_name
     ))
 }
 
@@ -249,10 +264,12 @@ mod tests {
             .iter()
             .map(|name| (*name, fs::read(source.path().join(name)).unwrap()))
             .collect();
-        let entries: Vec<_> = contents
-            .iter()
-            .map(|(name, bytes)| (*name, bytes.as_slice()))
-            .collect();
+        let mut entries = vec![("dist/", b"".as_slice())];
+        entries.extend(
+            contents
+                .iter()
+                .map(|(name, bytes)| (*name, bytes.as_slice())),
+        );
         let destination = tempfile::tempdir().unwrap();
         extract(&archive(&entries), destination.path()).unwrap();
         package::verify(destination.path(), &key_id).unwrap();
@@ -268,7 +285,8 @@ mod tests {
             "a\\b",
             "a:b",
             "a//b",
-            "directory/",
+            "../escape/",
+            "a//",
         ] {
             let destination = tempfile::tempdir().unwrap();
             assert!(extract(&archive(&[(name, b"test")]), destination.path()).is_err());
@@ -290,6 +308,22 @@ mod tests {
             release_url(&release).unwrap(),
             "https://github.com/example/other/releases/download/v1.0.0/custom-release.zip"
         );
+        release.release_tag = Some("zedit-v1.0.0".into());
+        assert_eq!(
+            release_url(&release).unwrap(),
+            "https://github.com/example/other/releases/download/zedit-v1.0.0/custom-release.zip"
+        );
+        for tag in [
+            "",
+            "../v1.0.0",
+            "v1.0.0?download=1",
+            "v1.0.0#fragment",
+            " v1.0.0",
+        ] {
+            release.release_tag = Some(tag.into());
+            assert!(release_url(&release).is_err());
+        }
+        release.release_tag = None;
         for name in [
             "../other.zip",
             "file.zip?x=1",

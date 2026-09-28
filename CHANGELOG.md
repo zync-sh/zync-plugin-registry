@@ -4,6 +4,10 @@
 
 ### Fixed
 
+- Accept explicit per-release GitHub tags, so Zedit's `zedit-v0.1.0` asset is
+  fetched without changing existing `v<version>` releases.
+- Prepare bounded editor archives with safe directory entries and separately
+  limited compressed, per-file, and extracted sizes.
 - Allow thumbnail-only updates to existing registry releases without weakening immutable package identity, trust metadata, or cumulative revocation preservation.
 
 ### Added
