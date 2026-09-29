@@ -2,14 +2,29 @@
   "signatures": [
     {
       "keyId": "sha256:53402fb200b7a4b29349ec1c2381c56d6c0146f93958b916a4db3f25c42bee06",
-      "signature": "OzSCbx+16np9KhAlZvsKxEzuZKO1RmXi84qPgZDVHRjNacgyyY/QBZRejOyulliCMti4dPN3dvLBaFZeNuJuBw=="
+      "signature": "cUvSAKgcYu32bxNlUe8wO1SeE9htgYxW7eVIW9xSnz9ew6MRnhMWbCfk4LmyQA28N6vy/CGs4WsNq6fkjZ/sCQ=="
     }
   ],
   "signed": {
     "_type": "zync.plugin-registry",
-    "expiresAtMs": 1791193657865,
-    "issuedAtMs": 1790588857865,
+    "expiresAtMs": 1791280262084,
+    "issuedAtMs": 1790675462084,
     "plugins": [
+      {
+        "channel": "stable",
+        "description": "A fast, full-featured code editor powered by Monaco.",
+        "downloadUrl": "https://github.com/zync-sh/zync-editor-monaco-plugin/releases/download/zedit-v0.1.0/zedit-0.1.0-signed.zip",
+        "id": "com.zync.editor.zedit",
+        "name": "Zedit",
+        "packageDigest": "sha256:2b2f4f525fcb496a59674fc95814968694444881c026da68c47ed98179050a39",
+        "pluginType": "editor-provider",
+        "publisher": "com.zync",
+        "publisherKeyId": "sha256:eeccbf7e9cb69165aa2fce6df48a1128032930081f4c89d44a8b35155efdb125",
+        "publisherPublicKey": "MHj7SMWjdmaBzZyURDc9EBlss2k65RlwoC8/jwKEt5U=",
+        "publisherVerified": true,
+        "thumbnailUrl": "https://raw.githubusercontent.com/zync-sh/zync-editor-monaco-plugin/main/src/icons/zedit.svg",
+        "version": "0.1.0"
+      },
       {
         "channel": "stable",
         "description": "Manage containers, inspect Docker resources, and view metrics and logs on this pane's server.",
@@ -42,6 +57,6 @@
       }
     ],
     "revocations": [],
-    "version": 5
+    "version": 7
   }
 }
