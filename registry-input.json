@@ -30,6 +30,17 @@
       "channel": "stable",
       "publisherVerified": true,
       "thumbnailUrl": "https://raw.githubusercontent.com/zync-sh/zync-editor-monaco-plugin/main/src/icons/zedit.svg"
+    },
+    {
+      "pluginId": "com.zync.editor.zedit",
+      "publisher": "com.zync",
+      "repository": "zync-sh/zync-editor-monaco-plugin",
+      "version": "0.1.1",
+      "releaseTag": "zedit-v0.1.1",
+      "assetName": "zedit-0.1.1-signed.zip",
+      "channel": "stable",
+      "publisherVerified": true,
+      "thumbnailUrl": "https://raw.githubusercontent.com/zync-sh/zync-editor-monaco-plugin/main/src/icons/zedit.svg"
     }
   ],
   "revocations": []
