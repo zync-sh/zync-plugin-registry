@@ -21,6 +21,17 @@
       "thumbnailUrl": "https://raw.githubusercontent.com/zync-sh/zync-docker-manager/v0.2.0/src/icons/docker-manager.svg"
     },
     {
+      "pluginId": "com.zync.plugin.docker-manager",
+      "publisher": "com.zync",
+      "repository": "zync-sh/zync-docker-manager",
+      "version": "0.3.1",
+      "releaseTag": "v0.3.1",
+      "assetName": "docker-manager-0.3.1-signed.zip",
+      "channel": "stable",
+      "publisherVerified": true,
+      "thumbnailUrl": "https://raw.githubusercontent.com/zync-sh/zync-docker-manager/v0.3.1/src/icons/docker-manager.svg"
+    },
+    {
       "pluginId": "com.zync.editor.zedit",
       "publisher": "com.zync",
       "repository": "zync-sh/zync-editor-monaco-plugin",
