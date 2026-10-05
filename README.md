@@ -1,7 +1,14 @@
 # Zync Plugin Registry
 
-Rust tooling for the next Zync plugin registry. This repository is being built
-alongside `zync-extensions`; it does not replace the legacy marketplace yet.
+Rust tooling and publication inputs for Zync's signed plugin registry. Current
+desktop builds configured for this registry use the published `registry.json`.
+
+## Community submissions
+
+Follow the [publisher guide](https://zync.thesudoer.in/docs/plugin-publishing/)
+and [submission checklist](CONTRIBUTING.md). New plugins use Manifest v2, an
+approved publisher/repository/key binding, and signed GitHub release ZIPs with
+matching `.sha256` assets. Do not edit generated `registry.json` or send private keys.
 
 ## Current scope
 
@@ -70,16 +77,16 @@ Ed25519 root signature. Canonical serialization is tested against the previous
 JavaScript implementation. Signing re-verifies package payloads and approvals;
 it does not trust the unsigned preparation report.
 
-## Migration
+## Desktop integration
 
 Package compatibility, release downloads, registry signing, root verification,
-and history-preservation checks are implemented. Before production migration:
+and history-preservation checks are implemented. For a new deployment or a
+desktop build moving from a legacy URL:
 
 1. Complete security review and staging tests against a Zync desktop build.
 2. Configure the protected CI signing environment and public root variable.
 3. Publish production `registry.json` using the existing root.
 4. Configure a new Zync build with the new registry URL and public trust keys.
-5. Retain `zync-extensions` for older clients until a separate retirement decision.
 
 Do not substitute a test fixture root or unsigned JSON for production metadata.
 The workflow refreshes metadata daily with a seven-day expiry and an increasing
