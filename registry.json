@@ -2,13 +2,13 @@
   "signatures": [
     {
       "keyId": "sha256:53402fb200b7a4b29349ec1c2381c56d6c0146f93958b916a4db3f25c42bee06",
-      "signature": "QtbWmkoBas/y6ZQlMKoMdHBbsVrZnBS7npgoG5QZCXzJOg81sQHTWMxWHeYp5dGa4K3hD1hA4Eyq2BF2aWwjCg=="
+      "signature": "vb1PpwBObo+B0O3R3VvsS9j5PFUOzujXBbxvOlRTJrKOUkYaPaFuo5912jkzZiXu7ST21UWiYCd8QTZR/eY7CQ=="
     }
   ],
   "signed": {
     "_type": "zync.plugin-registry",
-    "expiresAtMs": 1795432663727,
-    "issuedAtMs": 1794827863727,
+    "expiresAtMs": 1795521155800,
+    "issuedAtMs": 1794916355800,
     "plugins": [
       {
         "channel": "stable",
@@ -87,6 +87,6 @@
       }
     ],
     "revocations": [],
-    "version": 57
+    "version": 58
   }
 }
